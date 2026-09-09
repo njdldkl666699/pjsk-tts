@@ -7,11 +7,10 @@ janome_sysdic = os.path.join(janome_base, 'sysdic')
 
 datas = [
     (janome_sysdic, 'janome/sysdic'),
-    ('commons.py', '.')
 ]
 
 a = Analysis(
-    ['PJSK-MultiGUI.py'],
+    ['gui.py'],
     pathex=[],
     binaries=[],
     datas=datas,
@@ -33,7 +32,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='PJSK-MultiGUI',
+    name='pjsk-tts',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -53,11 +52,11 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='PJSK-MultiGUI',
+    name='pjsk-tts',
 )
 app = BUNDLE(
     coll,
-    name='PJSK-MultiGUI.app',
+    name='pjsk-tts.app',
     icon='favicon.ico',
     bundle_identifier=None,
 )

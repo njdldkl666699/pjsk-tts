@@ -1,7 +1,0 @@
-2022-09-06 01:34:14,731 - PJSK-MultiGUI.py - line:294 - ERROR - '' -12212022-09-06 01:38:54,584 - PJSK-MultiGUI.py - line:294 - ERROR - '' -24348
-2022-09-06 01:39:04,212 - PJSK-MultiGUI.py - line:294 - ERROR - '' -24348
-2022-09-06 01:41:57,909 - PJSK-MultiGUI.py - line:294 - ERROR - '' -9100
-2022-09-06 01:42:05,896 - PJSK-MultiGUI.py - line:294 - ERROR - '' -9100
-2022-09-06 01:42:07,604 - PJSK-MultiGUI.py - line:458 - ERROR - local variable 'audio' referenced before assignment -9100
-2022-09-06 01:43:54,125 - PJSK-MultiGUI.py - line:428 - ERROR - '~' -9100
-2022-09-06 01:43:54,125 - PJSK-MultiGUI.py - line:458 - ERROR - local variable 'stn_tst' referenced before assignment -9100

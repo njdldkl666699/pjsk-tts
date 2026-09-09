@@ -1,24 +1,14 @@
-新建文件夹/
-model/
-output/
-PJSK-MultiGUI_*.rar
 __pycache__/
 *.py[cod]
 *.so
 *.pyd
 *.pyo
 
-monotonic_align/build/
-monotonic_align/*.c
-monotonic_align/*.cpp
-monotonic_align/*.egg-info/
-monotonic_align/__pycache__/
+build/
+*.egg-info/
+.ruff_cache/
 
 *.log
-logs/
-
-playSounds/
-results/
 
 venv/
 env/
@@ -30,7 +20,6 @@ env/
 .DS_Store
 Thumbs.db
 
-dist/
-build/
-text.rar
-/monotonic_align/build
+models/
+logs/
+.env
