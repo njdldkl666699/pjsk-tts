@@ -10,7 +10,7 @@
 import io
 import os
 import threading
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import numpy as np
@@ -89,7 +89,7 @@ def _ensure_loaded(req: SpeechRequest) -> None:
 
 
 @asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def lifespan(_: FastAPI) -> AsyncGenerator[None]:
     """启动时若环境变量已配置则预加载模型。"""
     cfg, mdl = os.getenv(ENV_CONFIG), os.getenv(ENV_MODEL)
     if cfg and mdl:

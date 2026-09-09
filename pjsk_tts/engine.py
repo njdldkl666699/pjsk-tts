@@ -3,8 +3,10 @@
 供 GUI（app.py）与服务端（server.py）共同使用。
 """
 
+import ctypes
 import os
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,6 +24,44 @@ ENV_CONFIG = "PJSK_CONFIG"
 ENV_MODEL = "PJSK_MODEL"
 
 DEFAULT_SAMPLE_RATE = 22050
+
+
+def _configure_runtime() -> None:
+    """进程级运行时调优（导入时执行一次，GUI/服务端共用）。
+
+    - 关闭 NNPACK：在不支持的硬件上，torch 每次卷积分发都会重复输出
+      "Could not initialize NNPACK" 警告；本项目仅使用一维卷积，
+      而 NNPACK 只服务 4D NCHR 卷积，关闭无任何副作用。
+    - ``PJSK_TORCH_THREADS``：可选，限制 torch CPU 推理线程数，
+      降低多核机器上的内存占用（线程栈/分配 arena）与调度开销。
+    """
+    with suppress(Exception):  # torch 版本差异保护
+        torch.backends.nnpack.set_flags(False)
+    threads = os.getenv("PJSK_TORCH_THREADS")
+    if threads and threads.strip().isdigit() and int(threads) > 0:
+        torch.set_num_threads(int(threads))
+
+
+_configure_runtime()
+
+_LIBC: ctypes.CDLL | None = None
+try:
+    _LIBC = ctypes.CDLL("libc.so.6")
+    _LIBC.malloc_trim.argtypes = [ctypes.c_size_t]
+    _LIBC.malloc_trim.restype = ctypes.c_int
+except (OSError, AttributeError):
+    _LIBC = None
+
+
+def _trim_memory() -> None:
+    """将 glibc 空闲内存池归还操作系统，抑制推理后 RSS 虚高与 swap 压力。
+
+    仅在 glibc 平台生效；可用 ``PJSK_MALLOC_TRIM=0`` 关闭。
+    """
+    if _LIBC is None or os.getenv("PJSK_MALLOC_TRIM", "1") == "0":
+        return
+    with suppress(Exception):
+        _LIBC.malloc_trim(0)
 
 
 @dataclass(frozen=True)
@@ -160,6 +200,7 @@ class TtsEngine:
         utils.load_checkpoint(str(model_path), self.model, None)
         self.model_path = model_path
         self._log(f"模型文件加载成功: {model_path.name}")
+        _trim_memory()
 
     def load(self, cfg_path: str | Path, model_path: str | Path) -> None:
         """依次加载配置与模型。"""
@@ -224,4 +265,5 @@ class TtsEngine:
                 )
             else:
                 audio = self.model.infer(x_tst, x_len, **infer_kwargs)[0][0, 0].cpu().numpy()
+        _trim_memory()
         return audio, self.sample_rate

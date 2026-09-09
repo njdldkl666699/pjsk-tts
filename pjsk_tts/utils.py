@@ -13,18 +13,14 @@ def load_checkpoint(checkpoint_path, model, optimizer=None):
     if optimizer is not None:
         optimizer.load_state_dict(checkpoint_dict["optimizer"])
     saved_state_dict = checkpoint_dict["model"]
-    state_dict = model.module.state_dict() if hasattr(model, "module") else model.state_dict()
-    new_state_dict = {}
-    for k, v in state_dict.items():
-        try:
-            new_state_dict[k] = saved_state_dict[k]
-        except KeyError:
-            logger.info(f"{k} is not in the checkpoint")
-            new_state_dict[k] = v
-    if hasattr(model, "module"):
-        model.module.load_state_dict(new_state_dict)
-    else:
-        model.load_state_dict(new_state_dict)
+    target = model.module if hasattr(model, "module") else model
+    # strict=False + 参数化模块内置的 load 钩子：可自动转换旧版 weight_norm
+    # 的 weight_g/weight_v 键名；缺失/多余键记录到日志而非静默跳过。
+    result = target.load_state_dict(saved_state_dict, strict=False)
+    for k in result.missing_keys:
+        logger.warning(f"checkpoint 缺少参数，保留模型当前值: {k}")
+    for k in result.unexpected_keys:
+        logger.info(f"忽略 checkpoint 中多余的参数: {k}")
     logger.info(f"Loaded checkpoint '{checkpoint_path}' (iteration {iteration})")
     return model, optimizer, learning_rate, iteration
 
